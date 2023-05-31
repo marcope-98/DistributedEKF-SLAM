@@ -127,64 +127,6 @@ $$
 
     Helper method to retrieve the `x` and `y` coordinates of the landmarks.
 
-`Agent(Robot, codeDict, server, params)`
-
-    Constructor of the class that construct all the necessary objects to perform Cooperative SLAM
-
-
-`step()`
-
-    The `step` function retrieves the current control inputs, the sensed landmarks and surrounding agents, performs the prediction and correction step of the EKF SLAM algorithm and broadcast to the sensed robots the state and covariance matrix of the landmarks.
-
-`broadcast(receipients)`
-
-    The `broadcast` function generate the message to be sent and communicates to the server such message specifying sender (`id`) and the receipient (which is contained in receipients).
-
-`fetch()`
-
-    `fetch` method retrieves the messages received from other robots from the server and estimates the position of the landmarks based on the information consensus.
-
-In particualr the `fetch` function assumes that each landmark state is statistically indipendent with uncertainty represented by a Gaussian.
-The resulting landmark state is the MVUE estimate of the information received from other robots and the current estimate of the receiving agent.
-
-This can be easily implemented by inverting each 2x2 covariance matrix representing the `x` and `y` coordinates of the landmark obtaining the Fisher Information Matrix. Similarly one can obtain the information vector as follows:
-
-$$
-Y = \Sigma^{-1} \qquad\qquad y = Y x
-$$
-where
-- $Y$ is the information matrix
-- $\Sigma$ is the covariance matrix (2x2) of the landmark coordinates
-- $x$ is the state of the landmark (`x` and `y` estimated coordinates)
-- $y$ is the information vector
-
-Given the additive property of the Fisher Information Matrix one can perform separates information consensus operations (one for each landmark) given the information corresponding to the same landmark received from other robots.
-
-In particular the MVUE estimate of a single landmark is obtained as follows:
-
-$$
-y_{MVUE} = \frac{1}{R}\sum_{i=1}^R y_i \qquad\qquad Y_{MVUE} = \frac{1}{R}\sum_{i=1}^R Y_i
-$$
-where $R$ is the number of messages received.
-
-The estimated state from the consensus is obtained by inverting the equation of the Fisher Information Matrix, i.e.
-
-$$
-\Sigma = Y^{-1} \qquad\qquad x = Y^{-1} y
-$$
-
-`cvt_to_Robot()`
-
-    Helper method to convert the Agent state and member variables in a suitable format for visualization
-
-
-`state = get_state()`
-
-    Helper method to retrieve the current pose of the Agent.
-
-`landmarks = get_landmarks()`
-
-    Helper method to retrieve the `x` and `y` coordinates of the landmarks.
 
 ## ekfSLAM
 The `ekfSLAM` class implements all the elementary operation to perform the Extended Kalman Filter SLAM (with known data association) algorithm.
