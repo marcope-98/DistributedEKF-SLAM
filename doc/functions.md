@@ -13,6 +13,7 @@ Table of contents:
 	The utility function `cvt_rb_to_xy` converts the position of a range and bearing measurement (r and b) wrt a pose (x, y, theta) to the corresponding x and y coordinates.
 
 The transformation is performed as follows:
+
 $$
 \begin{align*}
 x &= range \cdot cos(bearing + \theta_{pose}) + x_{pose}\\
@@ -34,6 +35,7 @@ $$
 $$
 
 The resulting range and bearing output is computed as follows:
+
 $$
 \begin{align*}
 range &= \sqrt{\delta x^2 + \delta y^2}\\
