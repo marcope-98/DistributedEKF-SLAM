@@ -25,6 +25,7 @@ for i = profile.sim.start : profile.sim.end
     server.flush();
 end
 close(f);
+
 %% Simulation result
 % convert Agents state for animation
 Robots = cell([profile.sim.nRobots,1]);
