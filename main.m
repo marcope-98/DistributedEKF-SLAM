@@ -17,7 +17,8 @@ for i = profile.sim.start : profile.sim.end
     
     % fetch information and merge local maps using consensus
     for j = 1:profile.sim.nRobots
-        Agents(j).fetch();
+%         Agents(j).fetch();
+        Agents(j).consensus();
     end
 
     % flush the server (deletes all messages in the inbox)
@@ -32,30 +33,18 @@ for j = 1:profile.sim.nRobots
 end
 
 %% Find optimal transformation
-x_GT = profile.info.Landmarks(:,2:3);
-mu_GT = mean(profile.info.Landmarks(:,2:3));
-x_GT = x_GT - mu_GT;
+x_GT = profile.info.Landmarks(:,2:3)';
 for j = 1:profile.sim.nRobots
-    x_EST = Agents(j).get_landmarks()';
-    mu_EST = mean(x_EST);
-    x_EST = x_EST - mu_EST;
-    W = [0,0;0,0];
-    for i = 1:15
-        W = W + x_EST(i,:)' * x_GT(i,:);
-    end
-    [U, S, V] = svd(W);
-    R = V * U';
-    t = mu_GT' - R * mu_EST';
-    for i = 1:numel(Robots{j}.Est(:,1))
-        T = (R * Robots{j}.Est(i, 2:3)') + t;
-        Robots{j}.Est(i, 2:3) = T';
-    end
+    x_EST = Agents(j).get_landmarks();
+    [R,t] = find_transformation(x_EST, x_GT);
+    th = atan2(R(2,1), R(1,1));    
+    Robots{j}.Est(:,2:3) = (R * (Robots{j}.Est(:,2:3)') + t)';
+    Robots{j}.Est(:,4) = wrapToPi(Robots{j}.Est(:,4) + th);
 end
 
 
-%%
-
+%% 
 % animate the simulation results
 animateMRCLAMdataSet(Robots, profile.info.Landmarks, profile.sim.end, profile.sim.dt)
 
-clear i j total f
+clear i j total f th R t x_EST x_GT

@@ -1,12 +1,12 @@
 %% USER DEFINED VARIABLES
 settings          = struct;
 settings.nRobots  = 5;          % [1-5] number of robots to simulate
-settings.Dataset  = 2;          % [1-9] dataset number
+settings.Dataset  = 9;          % [1-9] dataset number
 settings.dt       = 0.02;       % [s]   simulation time step
 
 %% SIMULATION SETTINGS
 settings.sim          = struct;
-settings.sim.start    = NaN;    % default: NaN, index of simulation start
+settings.sim.start    = 1;    % default: NaN, index of simulation start
 settings.sim.end      = NaN;    % default: NaN, index of simulation end
 
 %% EXTENDED KALMAN FILTER SETTINGS
