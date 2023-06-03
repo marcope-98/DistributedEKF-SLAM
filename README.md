@@ -18,9 +18,18 @@ The root folder contains three main scripts: `./main.m`, `./init.m` and `./confi
 - `./main.m`   is the file to execute to perform the simulation. It contains the main simulation loop and a call to the animation function
 
 ## Documentation:
-- [Actuator.m](include/documentation.md#Actuator)
-- [Agent.m](include/documentation.md#Agent)
-- [ekfSLAM.m](include/documentation.md#ekfSLAM)
-- [Message.m](include/documentation.md#Message)
-- [Sensor.m](include/documentation.md#Sensor)
-- [Server.m](include/documentation.md#Server)
+
+### Classes
+
+- [Actuator.m](doc/classes.md#Actuator)
+- [Agent.m](doc/classes.md#Agent)
+- [ekfSLAM.m](doc/classes.md#ekfSLAM)
+- [Message.m](doc/classes.md#Message)
+- [Sensor.m](doc/classes.md#Sensor)
+- [Server.m](doc/classes.md#Server)
+
+### Helper Functions
+- [cvt_rb_to_xy.m](doc/functions.md#cvt_rb_to_xy)
+- [cvt_xy_to_rb.m](doc/functions.md#cvt_xy_to_rb)
+- [find_transformation.m](doc/functions.md#find_transformation)
+- [load_config.m](doc/functions.md#load_config)

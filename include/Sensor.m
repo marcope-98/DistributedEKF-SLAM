@@ -29,7 +29,8 @@ classdef Sensor < handle
                 end
                 
                 if landmarkID > 0 && landmarkID <= 5
-                    receipients = [receipients, landmarkID];
+                    z = [obj.Measurement(i, 3:4)'; landmarkID];
+                    receipients = [receipients, z];
                 end
                 if landmarkID > 5 && landmarkID < 21
                     z = [obj.Measurement(i, 3:4)'; landmarkID];

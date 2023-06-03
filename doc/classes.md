@@ -79,11 +79,26 @@ The `Agent` class is the main protagonist of  the project. It makes use of all o
 
     The `broadcast` function generate the message to be sent and communicates to the server such message specifying sender (`id`) and the receipient (which is contained in receipients).
 
-`fetch()`
+`[count, y, Y, observed] = fetch()`
 
-    `fetch` method retrieves the messages received from other robots from the server and estimates the position of the landmarks based on the information consensus.
+    `fetch` method retrieves messages received from other robots from the server and aligns the data contained in the message from the reference frame of the sender to the one of the receiver.
 
-In particualr the `fetch` function assumes that each landmark state is statistically indipendent with uncertainty represented by a Gaussian.
+    The function returns the number of valid messages that can be used in the consensus algorithm, the information vector `y`, the Fisher information matrix `Y` and the observed landmarks `observed` of each valid message.
+
+Please note that the Agents represent their local map in a separate reference frame (their initial condition is set to `x, y, theta` = `[0 0 0]`). Even if they had perfect knowledge of their initial pose, if they spend too much time not sensing any obstacles their pose estimate might drift. For this reason during the `fetch` method the set of landmarks from the sender is rotate and translated to align itself with the local map of the receiver.
+
+This is done using the `[R, t] = find_transformation(x1, x2)` utility function. Where `R` is the 2x2 rotation matrix and `t` is the 2x1 translation vector.
+Given these two quantities the state of each landmark of the sender and the covariance matrix associated with each landmark is rotated as follows:
+
+$$
+x' = R x + t\qquad\qquad \Sigma' = R \Sigma R'
+$$
+
+`consensus()`
+
+    The `consensus` method makes use of the valid messages to estimate the position of the landmarks.
+
+In particualr the `consensus` function assumes that each landmark state is statistically indipendent with uncertainty represented by a Gaussian.
 The resulting landmark state is the MVUE estimate of the information received from other robots and the current estimate of the receiving agent.
 
 This can be easily implemented by inverting each 2x2 covariance matrix representing the `x` and `y` coordinates of the landmark obtaining the Fisher Information Matrix. Similarly one can obtain the information vector as follows:
@@ -113,6 +128,11 @@ The estimated state from the consensus is obtained by inverting the equation of 
 $$
 \Sigma = Y^{-1} \qquad\qquad x = Y^{-1} y
 $$
+
+On this note, please notice that not every landmark has the same weight, e.g. 
+
+Given two agents A1 and A2, and three landmarks L1, L2 and L3. Suppose agent A1 senses L1 and L2, whereas agent A2 senses L2 and L3. Then the consensus will estimate the position of each landmark weighting the sum of the information matrix and the information vector using a factor of 1 for L1 and L3 (since only one agent senses them), whereas a factor of 0.5 in the case of L2 since both agents sense the same landmark.
+
 
 `cvt_to_Robot()`
 

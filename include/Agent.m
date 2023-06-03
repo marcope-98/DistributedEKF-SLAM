@@ -21,8 +21,8 @@ classdef Agent < handle
             obj.sim      = params.sim;  % simulation parameters
             obj.info     = Robot.G;     % ground truth info
             
-            state_0 = obj.info(obj.sim.start, 2:4)';
-            
+%             state_0 = obj.info(obj.sim.start, 2:4)';
+            state_0 = [0;0;0];
             obj.ekf      = ekfSLAM(state_0, params.ekf);
             obj.sensor   = Sensor(codeDict, Robot.M);
             obj.actuator = Actuator(obj.sim.start, Robot.O);
@@ -55,32 +55,86 @@ classdef Agent < handle
             end
             % prepare content of message
             content     = struct;
-            content.Y = zeros(2,2,obj.ekf.N);
-            content.y = zeros(2, obj.ekf.N);
-            for i = 1:obj.ekf.N
-                lID = 3 + 2*i;
-                cov = obj.ekf.cov(lID-1:lID,lID-1:lID);
-                state = obj.ekf.state(lID-1:lID);
-                content.Y(:,:,i) = inv(cov);
-                content.y(:,i)   = cov \ state;
+            content.landmarks = obj.get_landmarks();
+            content.cov = zeros(2,2,obj.ekf.N);
+            for i = 1 : obj.ekf.N
+                lID = 3 + 2 * i;
+                content.cov(:, :, i) = obj.ekf.cov(lID-1:lID,lID-1:lID);
             end
             content.obs = obj.ekf.observed;
-            
             % for each receipient send state
-            R = numel(receipients);
+            R = numel(receipients(1,:));
             for i = 1:R
+                x = cvt_rb_to_xy(receipients(1:2, i), obj.ekf.state(1:3)) + [0.165; 0];
+                content.x = x;
                 message = Message(content);
-                send(obj.server, obj.id, receipients(i), message);
+                send(obj.server, obj.id, receipients(3, i), message);
             end
         end
         
-        function fetch(obj)
-            % fetch messages from inbox
+        function [count, y, Y, observed] = fetch(obj)
             inbox = obj.server.inbox{obj.id};
-            % Retrieve self Fisher information matrix and information
-            % vector
+            obs = obj.ekf.observed;
+            count = 0;
+            for i = 1:numel(inbox)
+                message = inbox(i);
+                if ~isempty(message)
+                    common = obs & message.content.obs;
+                    if sum(common) > 0
+                        count = count + 1;
+                    end
+                end
+            end
+            
+            if count == 0
+                y = [];
+                Y = [];
+                observed = [];
+                return;
+            end
+            
+            landmarks = obj.get_landmarks();
+            y         = zeros(2, obj.ekf.N, count);
+            Y         = zeros(2, 2, obj.ekf.N, count);
+            observed  = zeros(1, obj.ekf.N, count, 'logical');
+            count = 0;
+            x = obj.ekf.state(1:2);
+            for i = 1:numel(inbox)
+                message = inbox(i);
+                content = message.content;
+                if ~isempty(message)
+                    common = obs & content.obs;
+                    if sum(common) > 0
+                        L = content.landmarks;
+                        L1 = [content.x, L(:, common)];
+                        L2 = [x, landmarks(:, common)];
+                        count = count + 1;
+                        [R, t] = find_transformation(L1, L2);
+                        for j = 1 : obj.ekf.N
+                            if content.obs(j)
+                                state = R * L(:, j) + t;
+                                cov = R * content.cov(:,:,j) * R';
+                                y(:, j, count) = cov \ state;
+                                Y(:,:,j,count) = inv(cov);
+                            else
+                                y(:, j, count) = [0; 0];
+                                Y(:,:,j,count) = zeros(2);
+                            end
+                        end
+                        observed(1, :, count) = content.obs;
+                    end
+                end
+            end
+        end
+        
+        function consensus(obj)
+            [count, y2, Y2, observed] = obj.fetch();
+            if count == 0
+                return;
+            end
+            
             Y = zeros(2,2,obj.ekf.N);
-            y = zeros(2, obj.ekf.N);
+            y = zeros(2,obj.ekf.N);
             for i = 1:obj.ekf.N
                 lID = 3 + 2*i;
                 cov = obj.ekf.cov(lID-1:lID,lID-1:lID);
@@ -89,37 +143,27 @@ classdef Agent < handle
                 y(:,i)   = cov \ state;
             end
             obs = obj.ekf.observed;
-            % perform consensus
-            d = 1; % used of iterative mean computation
-            % for each message in the inbox
-            for i = 1:numel(inbox)
-                % fetch content of the message
-                message = inbox(i);
-                content = message.content;
-                % if the message is not empty
-                if ~isempty(message)
-                    % compute factor for iterative mean computation
-                    d = d + 1;
-                    fact1 = 1 / d;
-                    fact2 = (d - 1) * fact1;
-                    % merge seen observed landmark
-                    obs = obs | content.obs;
-                    % for each landmark perform information consensus
-                    for j = 1:obj.ekf.N
-                        Yj = content.Y(:,:,j);
-                        yj = content.y(:,j);
-
-                        y(:,j)   = fact2 * y(:,j)   + fact1 * yj ;
-                        Y(:,:,j) = fact2 * Y(:,:,j) + fact1 * Yj ;
-                    end
+            d = obs;
+            for i = 1:count
+                d = d + observed(1,:,i);
+                obs = obs | observed(:,:,i);
+                for j = 1:obj.ekf.N
+                    Y(:,:,j) = Y(:,:,j) + Y2(:,:,j,i);
+                    y(:,j) = y(:,j) + y2(:,j,i);
                 end
             end
-
-            % if no message where present in the inbox return
-            if d == 1
-                return;
+            
+            for i = 1 : obj.ekf.N
+                if obs(i)
+                    den = 1 / (d(i));
+                    Y(:,:,i) = Y(:,:,i) * den;
+                    y(:, i) = y(:,i) * den;
+                else
+                    y(:, i) = [0;0];
+                    Y(:,:,i) = 1e-10 * eye(2);
+                end
             end
-            % we cannot assume correlation after map merging
+            
             obj.ekf.cov(1:3,4:end) = 0;
             obj.ekf.cov(4:end, 1:3) = 0;
             obj.ekf.cov(4:end, 4:end) = 0;
@@ -133,7 +177,6 @@ classdef Agent < handle
         end
         
         %% Utils
-        
         function Robot = cvt_to_Robot(obj)
             Robot = struct;
             Robot.O = obj.actuator.Odometry;
