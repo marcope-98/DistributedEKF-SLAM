@@ -1,7 +1,7 @@
 %% USER DEFINED VARIABLES
 settings          = struct;
 settings.nRobots  = 5;          % [1-5] number of robots to simulate
-settings.Dataset  = 9;          % [1-9] dataset number
+settings.Dataset  = 5;          % [1-9] dataset number
 settings.dt       = 0.02;       % [s]   simulation time step
 
 %% SIMULATION SETTINGS

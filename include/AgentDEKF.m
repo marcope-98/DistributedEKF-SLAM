@@ -2,7 +2,7 @@
 % See end of file for extended copyright information
 
 %%
-classdef Agent < handle
+classdef AgentDEKF < handle
     properties
         ekf;        % EKF SLAM object
         sensor;     % Sensor   object
@@ -11,18 +11,19 @@ classdef Agent < handle
         id;         % id of the robot [1 - 5]
         sim;        % Simulation details
         info;       % Robot Ground Truth
-        Est;        % Estimated robot pose history
-        LandmarkPositionHistory;
         server;     % Communication server
+        
+        
+        Est;                     % Estimated robot pose history
+        LandmarkPositionHistory; % Estimated Landmark Position History
     end
     
     methods
-        function obj = Agent(Robot, codeDict, server, params)
+        function obj = AgentDEKF(Robot, codeDict, server, params)
             obj.id       = params.id;   % robot id
             obj.sim      = params.sim;  % simulation parameters
             obj.info     = Robot.G;     % ground truth info
             
-%             state_0 = obj.info(obj.sim.start, 2:4)';
             state_0 = [0;0;0];
             obj.ekf      = ekfSLAM(state_0, params.ekf);
             obj.sensor   = Sensor(codeDict, Robot.M);
@@ -61,9 +62,7 @@ classdef Agent < handle
             % prepare content of message
             content     = struct;
             content.landmarks = obj.get_landmarks();
-            content.state = obj.ekf.state(4:end);
-            content.cov = zeros(2,2,obj.ekf.N);
-%             content.cov = obj.ekf.cov(4:end, 4:end);
+            content.cov       = zeros(2,2,obj.ekf.N);
             for i = 1 : obj.ekf.N
                 lID = 3 + 2 * i;
                 content.cov(:, :, i) = obj.ekf.cov(lID-1:lID,lID-1:lID);
@@ -72,7 +71,6 @@ classdef Agent < handle
             % for each receipient send state
             R = numel(receipients(1, :));
             for i = 1 : R
-                content.x = cvt_rb_to_xy(receipients(1:2,i), obj.ekf.state(1:3));
                 message = Message(content);
                 send(obj.server, obj.id, receipients(3, i), message);
             end
@@ -166,9 +164,6 @@ classdef Agent < handle
                     den = 1 / (d(i));
                     Y(:,:,i) = Y(:,:,i) * den;
                     y(:, i) = y(:,i) * den;
-%                 else
-%                     Y(:,:,i) = 1e-10 * eye(2);
-%                     y(:,i) = [0;0];
                 end
             end
             
@@ -182,7 +177,6 @@ classdef Agent < handle
                     obj.ekf.cov(lID-1:lID, lID-1:lID) = inv(Y(:,:,i));
                     obj.ekf.state(lID-1:lID) = Y(:,:,i) \ y(:,i);
             end
-%             obj.ekf.observed     = obs;
         end
         
         %% Utils

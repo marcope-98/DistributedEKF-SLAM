@@ -39,7 +39,7 @@ classdef ekfSLAM < handle
             obj.state(1:3) = state_0;
             % initialize covariance matrix with zeros
             obj.cov          = 1e10 * eye(3 + 2 * obj.N);
-            obj.cov(1:3,1:3) = 1e-3 * eye(3);
+            obj.cov(1:3,1:3) = zeros(3);
             % initialize observed landmarks to false
             obj.observed     = zeros(1, obj.N, 'logical');
         end
@@ -169,7 +169,6 @@ classdef ekfSLAM < handle
                 return;
             end
             I          = eye(3 + 2*obj.N);
-            bias       = [0.055; 0];              % radius of the landmark
             L          = numel(measurement(1,:)); % number of observations
             
             % helper variables to stack state and covariance update
@@ -178,7 +177,7 @@ classdef ekfSLAM < handle
             
             % for each observed landmark / for each observaction
             for i = 1:L
-                rb = measurement(1:2, i) + bias;  % add bias to measurement
+                rb = measurement(1:2, i);         % add bias to measurement
                 liD   = measurement(3, i) - 5;    % retrieve landmark id
                 land_pos = 3 + 2 * liD;           % retrieve index of landmark in state vector
                 landmark = obj.state(land_pos-1:land_pos); % retrieve landmark
@@ -189,7 +188,9 @@ classdef ekfSLAM < handle
                     % current pose estimate and measurement
                     landmark = cvt_rb_to_xy(rb, obj.state(1:3));
                     % add coordinates to state vector
-                    obj.state(land_pos-1:land_pos) = landmark; 
+                    obj.state(land_pos-1:land_pos) = landmark;
+                    obj.cov(land_pos-1:land_pos,land_pos-1:land_pos) = 1e10 * eye(2);
+                    continue;
                 end
                 % retrieve the Jacobian of the measurement model wrt the state
                 H3 = obj.dh_dstate(landmark);

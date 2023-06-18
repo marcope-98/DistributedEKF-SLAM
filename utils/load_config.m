@@ -53,7 +53,8 @@ function [profile, Robots] = load_config(config)
     
     % Generate default ekf settings
     if isnan(config.ekf.Q)
-        config.ekf.Q =  ([0.15, 0; 0, deg2rad(2)]).^2;
+        config.ekf.Q =  ([0.45, 0; 0, deg2rad(6)]).^2;
+%         config.ekf.Q =  ([11.8, 0; 0, 0.18]);
     end
     
     if isnan(config.ekf.A)
@@ -80,7 +81,7 @@ function [profile, Robots] = load_config(config)
     profile.sim.nRobots    = N_ROBOTS;
 
     profile.info           = struct;
-    profile.info.dataset   = filename;
+    profile.info.dataset   = strcat("MRCLAM_Dataset", num2str(config.Dataset));
     profile.info.Landmarks = Landmark_GT;
     profile.info.Barcodes  = Barcodes;
     
