@@ -39,11 +39,13 @@ for j = 1:profile.sim.nRobots
     Robots{j} = Agents(j).cvt_to_Robot();
 end
 
+%% Animate the simulation results
+display_simulation(Robots, profile);
+
 %% Plotting results
 pose_error_plot(Robots, profile);
 landmark_position_error_plot(Robots, profile);
 
-%% Animate the simulation results
-display_simulation(Robots, profile);
+
 
 clear i j total f server

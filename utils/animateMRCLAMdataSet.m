@@ -83,7 +83,6 @@ function animateMRCLAMdataSet(Robots, Landmark_Groundtruth, timesteps, sample_ti
         plotHandles_landmark_gt(i) = rectangle('Position',[p1,p2,d_landmark,d_landmark],'Curvature',[1,1],...
                   'FaceColor',colour(i+10,:),'LineWidth',1);
     end
-
     axis square;
     axis equal;
     axis([-2 6 -6 7]);

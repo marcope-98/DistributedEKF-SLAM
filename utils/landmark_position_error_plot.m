@@ -1,6 +1,6 @@
 function landmark_position_error_plot(Robots, profile)
     LandmarksGT = profile.info.Landmarks(:,2:3)';
-    figure
+    f3 = figure;
     title("Landmark Position RMSE")
     subtitle("Ground Truth vs Estimated")
     grid minor;
@@ -32,6 +32,7 @@ function landmark_position_error_plot(Robots, profile)
     yl = 0.6;
     legend_cell_array = 1:numel(Robots);
     ylim([0,yl])
+    figure(f3);
     legend(strcat('Robot ', num2str(legend_cell_array')))
     xlabel('Simulation time [s]')
     ylabel('Landmark Position RMSE [m]')

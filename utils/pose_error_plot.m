@@ -1,19 +1,17 @@
 function pose_error_plot(Robots, profile)
 
-    if flag
-        legend_cell_array = 1:numel(Robots);
-        figure(1)
-        title("Relative translation RMSE")
-        subtitle("Ground Truth vs Estimated")
-        grid minor;
-        hold on;
+    legend_cell_array = 1:numel(Robots);
+    f1 = figure;
+    title("Relative translation RMSE")
+    subtitle("Ground Truth vs Estimated")
+    grid minor;
+    hold on;
 
-        figure(2)
-        title("Relative rotation RMSE")
-        subtitle("Ground Truth vs Estimated")
-        grid minor;
-        hold on;
-    end
+    f2 = figure;
+    title("Relative rotation RMSE")
+    subtitle("Ground Truth vs Estimated")
+    grid minor;
+    hold on;
     
     for j = 1:numel(Robots)
         N = numel(Robots{j}.G(:,1));
@@ -58,42 +56,38 @@ function pose_error_plot(Robots, profile)
         delta(1,:) = sqrt(delta(1,:) ./ mu_den);
         delta(2,:) = sqrt(delta(2,:) ./ mu_den);
 
-        if flag
-            figure(1)
-            plot(Robots{j}.G(1:end-1,1),delta(1,:), 'LineWidth', 1.5)
+        figure(f1)
+        plot(Robots{j}.G(1:end-1,1),delta(1,:), 'LineWidth', 1.5)
 
-            figure(2)  
-            plot(Robots{j}.G(1:end-1,1), delta(2,:), 'LineWidth', 1.5)
-        end
+        figure(f2)  
+        plot(Robots{j}.G(1:end-1,1), delta(2,:), 'LineWidth', 1.5)
         
         disp([delta(1,end), delta(2,end)]);
     end
     
-    if flag
-        figure(1)
-        legend(strcat('Robot ', num2str(legend_cell_array')))
-        xlabel('Simulation time [s]')
-        ylabel('Translation RMSE [m]')
-        hold off;
-        set(gcf,'units','centimeters','position',[0,0,8.8,8.8]); 
-        set(gca,'FontSize',10,'FontName','Times');
-        if profile.sim.use_distributed
-            print(strcat('images/', profile.info.dataset, '_translationRMSE'),'-depsc2');
-        else
-            print(strcat('images/', profile.info.dataset, '_EKFtranslationRMSE'),'-depsc2');
-        end
+    figure(f1)
+    legend(strcat('Robot ', num2str(legend_cell_array')))
+    xlabel('Simulation time [s]')
+    ylabel('Translation RMSE [m]')
+    hold off;
+    set(gcf,'units','centimeters','position',[0,0,8.8,8.8]); 
+    set(gca,'FontSize',10,'FontName','Times');
+    if profile.sim.use_distributed
+        print(strcat('images/', profile.info.dataset, '_translationRMSE'),'-depsc2');
+    else
+        print(strcat('images/', profile.info.dataset, '_EKFtranslationRMSE'),'-depsc2');
+    end
 
-        figure(2)
-        legend(strcat('Robot ', num2str(legend_cell_array')))
-        xlabel('Simulation time [s]')
-        ylabel('Rotation RMSE [rad]')
-        hold off;
-        set(gcf,'units','centimeters','position',[0,0,8.8,8.8]); 
-        set(gca,'FontSize',10,'FontName','Times');
-        if profile.sim.use_distributed
-            print(strcat('images/', profile.info.dataset, '_rotationRMSE'), '-depsc2');
-        else
-            print(strcat('images/', profile.info.dataset, '_EKFrotationRMSE'),'-depsc2');
-        end
+    figure(f2)
+    legend(strcat('Robot ', num2str(legend_cell_array')))
+    xlabel('Simulation time [s]')
+    ylabel('Rotation RMSE [rad]')
+    hold off;
+    set(gcf,'units','centimeters','position',[0,0,8.8,8.8]); 
+    set(gca,'FontSize',10,'FontName','Times');
+    if profile.sim.use_distributed
+        print(strcat('images/', profile.info.dataset, '_rotationRMSE'), '-depsc2');
+    else
+        print(strcat('images/', profile.info.dataset, '_EKFrotationRMSE'),'-depsc2');
     end
 end
