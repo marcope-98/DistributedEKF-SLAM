@@ -3,7 +3,7 @@ clear;
 close all;
 
 % flags
-use_distributed = true;
+use_distributed = false;
 
 % initialize simulation parameters
 init;
