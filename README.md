@@ -1,5 +1,8 @@
-# DSMA-Assignment
-Assignment for the course "140472 - Distributed Systems for Measurement and Automation"
+# Distributed Extended Kalman Filter (EKF) Simultaneous Localization and Mapping (SLAM) with known correspondence
+
+Distributed Extended Kalman Filter Simultaneous Localization and Mapping with known data association.
+
+The code in this repository was submitted in fulfillment of the requirements for the course '140472 - Distributed Systems for Measurement and Automation'.
 
 ## Resources
 - ***Probabilistic Robotics (Intelligent Robotics and Autonomous Agents)***. Sebastian Thrun, Wolfram Burgard, and Dieter Fox. 2005. 
@@ -16,6 +19,12 @@ The root folder contains three main scripts: `./main.m`, `./init.m` and `./confi
 - `./config.m` contains a Matlab structure with the user defined simulation parameters
 - `./init.m`   loads the dataset, it resamples it and initializes the Agents in the simulation
 - `./main.m`   is the file to execute to perform the simulation. It contains the main simulation loop and a call to the animation function
+
+## Results
+
+The comparison of the Distributed EKF SLAM algorithm with the ground truth for the second dataset is displayed below:
+
+![](https://github.com/marcope-98/DistributedEKF-SLAM/blob/master/media/dataset2.gif)
 
 ## Documentation:
 
