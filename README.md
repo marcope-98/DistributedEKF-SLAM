@@ -24,7 +24,7 @@ The root folder contains three main scripts: `./main.m`, `./init.m` and `./confi
 
 The comparison of the Distributed EKF SLAM algorithm with the ground truth for the second dataset is displayed below:
 
-![](https://github.com/marcope-98/DistributedEKF-SLAM/blob/master/media/dataset2.gif)
+![](https://github.com/marcope-98/DistributedEKF-SLAM/blob/main/media/dataset2.gif)
 
 ## Documentation:
 
